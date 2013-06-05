@@ -44,12 +44,12 @@ public class TeamManager {
 			cp.getServer().getPlayer(player).sendMessage(blueTeam.encodeTeamColor("Welcome to the BLUE team!"));
 			return;
 		}
-		if(value == 2) { 
+		if(value == 2) {
 			yellowTeam.addPlayer(player);
 			cp.getServer().getPlayer(player).sendMessage(yellowTeam.encodeTeamColor("Welcome to the YELLOW team!"));
 			return;
 		}
-		if(value == 3) { 
+		if(value == 3) {
 			greenTeam.addPlayer(player);
 			cp.getServer().getPlayer(player).sendMessage(greenTeam.encodeTeamColor("Welcome to the GREEN team!"));
 			return;
@@ -156,7 +156,7 @@ public class TeamManager {
 		}
 		return null;
 	}
-	
+
 	public Team getTeamFromWool(byte data) {
 		if (redTeam.getTeamWoolData() == data) {
 			return redTeam;
@@ -172,9 +172,9 @@ public class TeamManager {
 		}
 		return null;
 	}
-        
-        public boolean inEnemyTeamSpawn(Player player) {
-                Location playerLocation = player.getLocation();
+
+	public boolean inEnemyTeamSpawn(Player player) {
+		Location playerLocation = player.getLocation();
 		Team playerTeam = getTeamMemberOf(player.getName());
 		if(playerTeam != redTeam) {
 			if(redTeam.inTeamSpawn(playerLocation)) {
@@ -197,52 +197,52 @@ public class TeamManager {
 			}
 		}
 		return false;
-    }
-	
-    public boolean inRangeOfEnemyTeamSpawn(Player player) {
-        Location playerLocation = player.getLocation();
-        Team playerTeam = getTeamMemberOf(player.getName());
-        if (playerTeam != redTeam) {
-            if (redTeam.inTeamBase(playerLocation)) {
-                return true;
-            }
-        }
-        if (playerTeam != blueTeam) {
-            if (blueTeam.inTeamBase(playerLocation)) {
-                return true;
-            }
-        }
-        if (playerTeam != yellowTeam) {
-            if (yellowTeam.inTeamBase(playerLocation)) {
-                return true;
-            }
-        }
-        if (playerTeam != greenTeam) {
-            if (greenTeam.inTeamBase(playerLocation)) {
-                return true;
-            }
-        }
-        return false;
-    }
+	}
 
-    public boolean inOwnTeamBase(Player player) {
+	public boolean inRangeOfEnemyTeamSpawn(Player player) {
 		Location playerLocation = player.getLocation();
 		Team playerTeam = getTeamMemberOf(player.getName());
-                if(redTeam.inTeamBase(playerLocation)) {
-                        return playerTeam == redTeam;
-                }
-                if(blueTeam.inTeamBase(playerLocation)) {
-                        return playerTeam == blueTeam;
-                }
-                if(yellowTeam.inTeamBase(playerLocation)) {
-                        return playerTeam == yellowTeam;
-                }
-                if(greenTeam.inTeamBase(playerLocation)) {
-                        return playerTeam == greenTeam;
-                }
+		if (playerTeam != redTeam) {
+			if (redTeam.inTeamBase(playerLocation)) {
+				return true;
+			}
+		}
+		if (playerTeam != blueTeam) {
+			if (blueTeam.inTeamBase(playerLocation)) {
+				return true;
+			}
+		}
+		if (playerTeam != yellowTeam) {
+			if (yellowTeam.inTeamBase(playerLocation)) {
+				return true;
+			}
+		}
+		if (playerTeam != greenTeam) {
+			if (greenTeam.inTeamBase(playerLocation)) {
+				return true;
+			}
+		}
 		return false;
 	}
-	
+
+	public boolean inOwnTeamBase(Player player) {
+		Location playerLocation = player.getLocation();
+		Team playerTeam = getTeamMemberOf(player.getName());
+				if(redTeam.inTeamBase(playerLocation)) {
+						return playerTeam == redTeam;
+				}
+				if(blueTeam.inTeamBase(playerLocation)) {
+						return playerTeam == blueTeam;
+				}
+				if(yellowTeam.inTeamBase(playerLocation)) {
+						return playerTeam == yellowTeam;
+				}
+				if(greenTeam.inTeamBase(playerLocation)) {
+						return playerTeam == greenTeam;
+				}
+		return false;
+	}
+
 	public Team isFlagBearer(Player player) {
 		if (redTeam.flagHolder == player) {
 			return redTeam;
@@ -258,7 +258,7 @@ public class TeamManager {
 		}
 		return null;
 	}
-	
+
 	public Team isFlagBlock(Location loc) {
 //		cp.getLogger().info(loc.getX() + " " + loc.getY() + " " + loc.getZ());
 //		cp.getLogger().info(redTeam.getTeamFlag().getX() + " " + redTeam.getTeamFlag().getY() + " " + redTeam.getTeamFlag().getZ());
@@ -286,8 +286,7 @@ public class TeamManager {
 		}
 		return null;
 	}
-	
-	
+
 	public boolean shouldTakeDamageFromBlock(Block block,String player) {
 		if (block.getType() == Material.WOOL) {
 			if (block.getData() == 14 || block.getData() == 3 || block.getData() == 4 || block.getData() == 5) {

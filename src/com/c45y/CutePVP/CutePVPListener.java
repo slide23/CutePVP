@@ -69,7 +69,7 @@ public class CutePVPListener implements Listener{
 	public void onPlayerJoin(PlayerJoinEvent event){
 		Player player = event.getPlayer();
 		Team playerTeam = plugin.tm.getTeamMemberOf(player.getName());
-		if( playerTeam == null || !player.hasPlayedBefore()){
+		if (playerTeam == null || !player.hasPlayedBefore()) {
 			plugin.tm.onFirstJoin(player.getName());
 			playerTeam = plugin.tm.getTeamMemberOf(player.getName());
 		}

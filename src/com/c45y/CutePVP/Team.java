@@ -28,10 +28,10 @@ public class Team {
 	private byte woolData;
 	private HashMap<String, Integer> teamMembers = new HashMap<String, Integer>();
 	public Player flagHolder;
-        private CutePVP plugin;
+		private CutePVP plugin;
 
 	public Team(CutePVP plugin, Server s1, FileConfiguration f1, String n1, ChatColor c2, byte w1) {
-            this.plugin = plugin;
+			this.plugin = plugin;
 		server = s1;
 		config = f1;
 		teamName = n1;
@@ -54,7 +54,7 @@ public class Team {
 	public ItemStack getTeamItemStack() {
 		return new ItemStack(35, 1, woolData);
 	}
-	
+
 	public short getTeamWoolData() {
 		return (short) woolData;
 	}
@@ -67,12 +67,13 @@ public class Team {
 
 	public Location getTeamSpawn() {
 		return new Location(
-				server.getWorlds().get(0),
-				config.getDouble(teamName + "spawn.x"),
-				config.getDouble(teamName + "spawn.y"),
-				config.getDouble(teamName + "spawn.z"),
-				(float)config.getDouble(teamName + "spawn.yaw"),
-				(float)config.getDouble(teamName + "spawn.pitch"));
+			server.getWorlds().get(0),
+			config.getDouble(teamName + "spawn.x"),
+			config.getDouble(teamName + "spawn.y"),
+			config.getDouble(teamName + "spawn.z"),
+			(float)config.getDouble(teamName + "spawn.yaw"),
+			(float)config.getDouble(teamName + "spawn.pitch")
+		);
 	}
 
 	public void setTeamSpawn(Location l1) {
@@ -81,58 +82,57 @@ public class Team {
 		config.set(teamName + "spawn.z", l1.getZ());
 		config.set(teamName + "spawn.yaw", l1.getYaw());
 		config.set(teamName + "spawn.pitch", l1.getPitch());
-                plugin.saveConfig();
+		plugin.saveConfig();
 	}
-	
+
 	public boolean inTeamBase(Location l1) {
-                RegionManager mgr = plugin.getWorldGuard().getGlobalRegionManager().get(l1.getWorld());
-                Vector pt = new Vector(l1.getBlockX(), l1.getBlockY(), l1.getBlockZ());
-                ApplicableRegionSet set = mgr.getApplicableRegions(pt);
-                
-                for (ProtectedRegion r : set) {
-                    if (r.getId().equalsIgnoreCase(teamName + "base"))
-                        return true;
-                }
-                
+		RegionManager mgr = plugin.getWorldGuard().getGlobalRegionManager().get(l1.getWorld());
+		Vector pt = new Vector(l1.getBlockX(), l1.getBlockY(), l1.getBlockZ());
+		ApplicableRegionSet set = mgr.getApplicableRegions(pt);
+
+		for (ProtectedRegion r : set) {
+			if (r.getId().equalsIgnoreCase(teamName + "base"))
+				return true;
+		}
+
 		return false;
 	}
-        
-        public void setCarrier(Player player) {
-            flagHolder = player;
-            if (player != null)
-	            config.set("carrier." + teamName + "flag", player.getName());
-        }
-        
-        public void removeCarrier() {
-            flagHolder = null;
-            config.set("carrier." + teamName + "flag", null);
-            plugin.saveConfig();
-        }
-                
-        
-        public boolean isTeamFlagRegion(Location l1) {
-                RegionManager mgr = plugin.getWorldGuard().getGlobalRegionManager().get(l1.getWorld());
-                Vector pt = new Vector(l1.getBlockX(), l1.getBlockY(), l1.getBlockZ());
-                ApplicableRegionSet set = mgr.getApplicableRegions(pt);
-                
-                for (ProtectedRegion r : set) {
-                    if (r.getId().equalsIgnoreCase(teamName + "_flag"))
-                        return true;
-                }
-                
+
+	public void setCarrier(Player player) {
+		flagHolder = player;
+		if (player != null)
+			config.set("carrier." + teamName + "flag", player.getName());
+	}
+
+	public void removeCarrier() {
+		flagHolder = null;
+		config.set("carrier." + teamName + "flag", null);
+		plugin.saveConfig();
+	}
+
+	public boolean isTeamFlagRegion(Location l1) {
+		RegionManager mgr = plugin.getWorldGuard().getGlobalRegionManager().get(l1.getWorld());
+		Vector pt = new Vector(l1.getBlockX(), l1.getBlockY(), l1.getBlockZ());
+		ApplicableRegionSet set = mgr.getApplicableRegions(pt);
+
+		for (ProtectedRegion r : set) {
+			if (r.getId().equalsIgnoreCase(teamName + "_flag"))
+				return true;
+		}
+
 		return false;
 	}
-        
-        public boolean inTeamSpawn(Location l1) {
-                RegionManager mgr = plugin.getWorldGuard().getGlobalRegionManager().get(l1.getWorld());
-                Vector pt = new Vector(l1.getBlockX(), l1.getBlockY(), l1.getBlockZ());
-                ApplicableRegionSet set = mgr.getApplicableRegions(pt);
-                
-                for (ProtectedRegion r : set) {
-                    if (r.getId().equalsIgnoreCase(teamName + "spawn"))
-                        return true;
-                }
-                
+
+	public boolean inTeamSpawn(Location l1) {
+		RegionManager mgr = plugin.getWorldGuard().getGlobalRegionManager().get(l1.getWorld());
+		Vector pt = new Vector(l1.getBlockX(), l1.getBlockY(), l1.getBlockZ());
+		ApplicableRegionSet set = mgr.getApplicableRegions(pt);
+
+		for (ProtectedRegion r : set) {
+			if (r.getId().equalsIgnoreCase(teamName + "spawn"))
+				return true;
+		}
+
 		return false;
 	}
 
@@ -140,12 +140,13 @@ public class Team {
 
 	public Location getTeamFlag() {
 		return new Location(
-				server.getWorlds().get(0),
-				config.getDouble(teamName + "flag.x"),
-				config.getDouble(teamName + "flag.y"),
-				config.getDouble(teamName + "flag.z"));
+			server.getWorlds().get(0),
+			config.getDouble(teamName + "flag.x"),
+			config.getDouble(teamName + "flag.y"),
+			config.getDouble(teamName + "flag.z")
+		);
 	}
-	
+
 	public void dropTeamFlag(Location l1) {
 		Block flag = server.getWorlds().get(0).getBlockAt(l1); //Get a handle for the
 		flag.setTypeIdAndData(35, woolData, false);
@@ -157,22 +158,23 @@ public class Team {
 		config.set(teamName + "flag.x", l1.getX());
 		config.set(teamName + "flag.y", l1.getY());
 		config.set(teamName + "flag.z", l1.getZ());
-        plugin.saveConfig();
+		plugin.saveConfig();
 	}
 
 	public Location getTeamFlagHome() {
 		return new Location(
-				server.getWorlds().get(0),
-				config.getDouble(teamName + "flag.home.x"),
-				config.getDouble(teamName + "flag.home.y"),
-				config.getDouble(teamName + "flag.home.z"));
+			server.getWorlds().get(0),
+			config.getDouble(teamName + "flag.home.x"),
+			config.getDouble(teamName + "flag.home.y"),
+			config.getDouble(teamName + "flag.home.z")
+		);
 	}
 
 	public void setTeamFlagHome(Location l1) {
 		config.set(teamName + "flag.home.x", l1.getX());
 		config.set(teamName + "flag.home.y", l1.getY());
 		config.set(teamName + "flag.home.z", l1.getZ());
-                plugin.saveConfig();
+		plugin.saveConfig();
 	}
 
 	public boolean isTeamFlag(Location l1) {
@@ -188,7 +190,7 @@ public class Team {
 		Block flag_home = server.getWorlds().get(0).getBlockAt(getTeamFlagHome()); //Get a handle for the
 		flag_home.setTypeIdAndData(35, woolData, false);
 		setTeamFlag(getTeamFlagHome());
-                removeCarrier();
+		removeCarrier();
 	}
 
 	/* Team player management */
@@ -212,16 +214,16 @@ public class Team {
 	}
 
 	public boolean inTeam(String playerName) {
-		if (teamMembers.containsKey(playerName)) { 
+		if (teamMembers.containsKey(playerName)) {
 			return true;
 		}
 		return false;
 	}
-	
+
 	public Set<String> getTeamMembers() {
 		return teamMembers.keySet();
 	}
-	
+
 	public Set<String> getTeamMembersOnline() {
 		List<String> online = new ArrayList<String>();
 		for (String playerName : teamMembers.keySet()) {
@@ -234,17 +236,17 @@ public class Team {
 	}
 
 	public void message(String m1) {
-		for( String player: getTeamMembersOnline() ){
+		for (String player: getTeamMembersOnline()) {
 			server.getPlayer(player).sendMessage(m1);
 		}
 	}
-	
+
 	public void setHelmet(Player player) {
 		player.getInventory().setHelmet(getTeamItemStack());
 	}
-	
+
 	public void setCompassTarget() {
-		for( String playerName: teamMembers.keySet() ){
+		for (String playerName: teamMembers.keySet()) {
 			Player player = server.getPlayer(playerName);
 			if (player != null)
 				player.setCompassTarget(getTeamFlag());
@@ -255,22 +257,22 @@ public class Team {
 
 	public void addTeamScore(int inc) {
 		config.set(teamName + "score.total", getTeamScore() + inc);
-                plugin.saveConfig();
+		plugin.saveConfig();
 	}
-        
-        public void addTeamKill() {
-            config.set(teamName + "kills.total", getTeamKills() + 1);
-            plugin.saveConfig();
-        }
-        
-        public int getTeamKills() {
-            return config.getInt(teamName + "kills.total");
-        }
+
+	public void addTeamKill() {
+		config.set(teamName + "kills.total", getTeamKills() + 1);
+		plugin.saveConfig();
+	}
+
+	public int getTeamKills() {
+		return config.getInt(teamName + "kills.total");
+	}
 
 	public int getTeamScore() {
 		return config.getInt(teamName + "score.total");
 	}
-        
+
 	public void addPlayerScore(String player, int inc) {
 		int playerScore = getPlayerScore(player);
 		teamMembers.put(player, playerScore + inc);

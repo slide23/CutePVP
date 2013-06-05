@@ -27,24 +27,24 @@ public class CutePVP extends JavaPlugin {
 	private final CutePVPListener loglistener = new CutePVPListener(this);
 	HashMap<String, String> fposSet = new HashMap<String, String>();
 	TeamManager tm;
-        WorldGuardPlugin wgPlugin = null;
-        
-        public WorldGuardPlugin getWorldGuard() {
-            if (wgPlugin == null) {
-                wgPlugin = (WorldGuardPlugin)getServer().getPluginManager().getPlugin("WorldGuard");
-                if (wgPlugin != null) {
-                    if (!wgPlugin.isEnabled()) {
-                        getPluginLoader().enablePlugin(wgPlugin);
-                    }
-                }
-                else {
-                    getLogger().log(Level.INFO, "Could not load worldguard, disabling");
-                    wgPlugin = null;
-                }
-            }
-            return wgPlugin;
-        }
-        
+	WorldGuardPlugin wgPlugin = null;
+
+	public WorldGuardPlugin getWorldGuard() {
+		if (wgPlugin == null) {
+			wgPlugin = (WorldGuardPlugin)getServer().getPluginManager().getPlugin("WorldGuard");
+			if (wgPlugin != null) {
+				if (!wgPlugin.isEnabled()) {
+					getPluginLoader().enablePlugin(wgPlugin);
+				}
+			}
+			else {
+				getLogger().log(Level.INFO, "Could not load worldguard, disabling");
+				wgPlugin = null;
+			}
+		}
+		return wgPlugin;
+	}
+
 	public void loadPlayers() {
 		List<String> redPlayerNames = getConfig().getStringList("teams.red.players");
 		for (String redPlayerName : redPlayerNames) {
@@ -76,7 +76,7 @@ public class CutePVP extends JavaPlugin {
 		getConfig().set("teams.yellow.online", new ArrayList<String>(tm.yellowTeam.getTeamMembersOnline()));
 		getConfig().set("teams.green.online", new ArrayList<String>(tm.greenTeam.getTeamMembersOnline()));
 */
-        saveConfig();
+		saveConfig();
 	}
 
 	@Override
@@ -106,10 +106,12 @@ public class CutePVP extends JavaPlugin {
 				//respawnFlags();
 				getLogger().info("Running buff");
 				Location powerblock = new Location(
-						getServer().getWorlds().get(0),
-						getConfig().getDouble("block.buff.x"),
-						getConfig().getDouble("block.buff.y"),
-						getConfig().getDouble("block.buff.z"));
+					getServer().getWorlds().get(0),
+					getConfig().getDouble("block.buff.x"),
+					getConfig().getDouble("block.buff.y"),
+					getConfig().getDouble("block.buff.z")
+				);
+
 				if (getServer().getWorlds().get(0).getBlockAt(powerblock) != null) {
 					Block gPowerBlock = getServer().getWorlds().get(0).getBlockAt(powerblock);
 					if (gPowerBlock.getType() == Material.WOOL) {
@@ -125,6 +127,7 @@ public class CutePVP extends JavaPlugin {
 						}
 					}
 				}
+
 				getLogger().info("End running buff");
 				if (tm.blueTeam.flagHolder == null) {
 					tm.blueTeam.respawnTeamFlag();
@@ -176,6 +179,7 @@ public class CutePVP extends JavaPlugin {
 			sender.sendMessage("Sorry, this plugin cannot be used from console");
 			return true;
 		}
+
 		Player player = (Player) sender;
 		if (command.getName().equalsIgnoreCase("g")) {
 			String str = StringUtils.join(args, " ");
@@ -189,27 +193,27 @@ public class CutePVP extends JavaPlugin {
 //				loadPlayers();
 				return true;
 			}
-			if (args.length == 1 && new String("save").equals(args[0])) {
+			else if (args.length == 1 && new String("save").equals(args[0])) {
 				savePlayers();
 				sender.sendMessage("[CutePVP] Saved");
 				return true;
 			}
-                        if (args.length == 1 && args[0].equalsIgnoreCase("setbuff")) {
-                            Block block = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
-                            player.sendMessage("Set to: " + block.getType().name());
-                            getConfig().set("block.buff.x", block.getLocation().getX());
-                            getConfig().set("block.buff.y", block.getLocation().getY());
-                            getConfig().set("block.buff.z", block.getLocation().getZ());
-                            saveConfig();
-                        }
-			if (args.length == 2 && new String("rmplayer").equals(args[0])) {
+			else if (args.length == 1 && args[0].equalsIgnoreCase("setbuff")) {
+				Block block = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
+				player.sendMessage("Set to: " + block.getType().name());
+				getConfig().set("block.buff.x", block.getLocation().getX());
+				getConfig().set("block.buff.y", block.getLocation().getY());
+				getConfig().set("block.buff.z", block.getLocation().getZ());
+				saveConfig();
+			}
+			else if (args.length == 2 && new String("rmplayer").equals(args[0])) {
 				String playerName = args[1];
 				Team team = tm.getTeamMemberOf(playerName);
 				team.removePlayer(playerName);
 				sender.sendMessage("[CutePVP] Removed Player");
 				return true;
 			}
-			if (args.length == 2 && new String("setspawn").equals(args[0])) {
+			else if (args.length == 2 && new String("setspawn").equals(args[0])) {
 				if (new String("red").equals(args[1])) { tm.redTeam.setTeamSpawn(player.getLocation()); }
 				if (new String("blue").equals(args[1])) { tm.blueTeam.setTeamSpawn(player.getLocation()); }
 				if (new String("yellow").equals(args[1])) { tm.yellowTeam.setTeamSpawn(player.getLocation()); }
@@ -217,7 +221,7 @@ public class CutePVP extends JavaPlugin {
 				sender.sendMessage("[CutePVP] Set Spawn");
 				return true;
 			}
-			if (args.length == 2 && new String("setflag").equals(args[0])) {
+			else if (args.length == 2 && new String("setflag").equals(args[0])) {
 				if (new String("red").equals(args[1])) { tm.redTeam.setTeamFlag(player.getTargetBlock(null, 50).getLocation()); }
 				if (new String("blue").equals(args[1])) { tm.blueTeam.setTeamFlag(player.getTargetBlock(null, 50).getLocation()); }
 				if (new String("yellow").equals(args[1])) { tm.yellowTeam.setTeamFlag(player.getTargetBlock(null, 50).getLocation()); }
@@ -225,7 +229,7 @@ public class CutePVP extends JavaPlugin {
 				sender.sendMessage("[CutePVP] Set flag loc");
 				return true;
 			}
-			if (args.length == 2 && new String("setflaghome").equals(args[0])) {
+			else if (args.length == 2 && new String("setflaghome").equals(args[0])) {
 				if (new String("red").equals(args[1])) { tm.redTeam.setTeamFlagHome(player.getTargetBlock(null, 50).getLocation()); }
 				if (new String("blue").equals(args[1])) { tm.blueTeam.setTeamFlagHome(player.getTargetBlock(null, 50).getLocation()); }
 				if (new String("yellow").equals(args[1])) { tm.yellowTeam.setTeamFlagHome(player.getTargetBlock(null, 50).getLocation()); }
@@ -233,7 +237,7 @@ public class CutePVP extends JavaPlugin {
 				sender.sendMessage("[CutePVP] Set flag home loc");
 				return true;
 			}
-			if (args.length == 1 && new String("teams").equals(args[0])) {
+			else if (args.length == 1 && new String("teams").equals(args[0])) {
 				sender.sendMessage("[CutePVP] Online: Red=" + tm.redTeam.getTeamMembersOnline().size() + " Blue=" + tm.blueTeam.getTeamMembersOnline().size() + " Yellow=" + tm.yellowTeam.getTeamMembersOnline().size() + " Green=" + tm.greenTeam.getTeamMembersOnline().size());
 				sender.sendMessage("[CutePVP] Total: Red=" + tm.redTeam.getTeamMembers().size() + " Blue=" + tm.blueTeam.getTeamMembers().size() + " Yellow=" + tm.yellowTeam.getTeamMembers().size() + " Green=" + tm.greenTeam.getTeamMembers().size());
 				return true;
