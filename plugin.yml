@@ -1,57 +1,57 @@
 name: CutePVP
 main: com.c45y.CutePVP.CutePVP
 version: 1.1
-softdepend: [WorldGuard]
+softdepend: [WorldGuard, ServerMessengerPlugin]
 
 permissions:
-    CutePVP.mod:
-        description: asdf
-        default: op
-    CutePVP.user:
+    CutePVP.player:
         description: a user
         default: true
+    CutePVP.mod:
+        description: mod
+        default: op
+    CutePVP.modmode:
+        description: modmode
+        default: not op
     CutePVP.admin:
         description: admin
         default: op
+        children:
+            CutePVP.mod: true
+
 commands:
-  asdf:
-    description: set config things
-    permission: CutePVP.mod
-    usage: |
-           /asdf: set config things
   g:
     description: Global chat
-    permission: CutePVP.user
+    permission: CutePVP.player
     usage: |
            /g [message]
-  fpos:
-    description: enter set flag pos mode
-    permission: CutePVP.mod
-    usage: |
-           /fpos <red|blue|yellow|green>
-  cutepvp:
-    description: cutepvp stuff
-    permission: CutePVP.admin
-    usage: |
-           /cutepvp [stuff]
   list:
     description: lists teams
-    permissions: CutePVP.user
+    permissions: CutePVP.player
     usage: |
            /list
   score:
     description: teams score
-    permissions: CutePVP.user
+    permissions: CutePVP.player
     usage: |
            /score
   drop:
     description: drop flag
-    permissions: CutePVP.user
+    permissions: CutePVP.player
     usage: |
            /drop
   flag:
     description: displays flag location
-    permissions: CutePVP.user
+    permissions: CutePVP.player
     usage: |
            /flag
-
+  ctf:
+    description: CTF stuff
+    permission: CutePVP.mod
+    usage: |
+           /ctf [stuff]
+  cutepvp:
+    description: CutePVP stuff
+    permission: CutePVP.admin
+    usage: |
+           /cutepvp [stuff]

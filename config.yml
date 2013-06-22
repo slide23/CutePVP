@@ -1,48 +1,33 @@
-spawn:
-  all:
-    x: 0.0
-    y: 4.0
-    z: 0.0
+teams:
   red:
-    x: 100.0
-    y: 6.0
-    z: 100.0
+    block: wool:13
+    color: red
+    spawn:
+      region:
+      x:
+      y:
+      z:
+    flag:
+      region:
+      x:
+      y:
+      z:
+    server: 
   blue:
-    x: 100.0
-    y: 3.0
-    z: -100.0
-  yellow:
-    x: -100.0
-    y: 4.0
-    z: -100.0
-  green:
-    x: -100.0
-    y: 4.0
-    z: 100.0
-block:
-  buff:
-    x: 0.0
-    y: 40.0
-    z: 0.0
-ctf:
-  red:
-    curr: {}
-  blue:
-    curr: {}
-  yellow:
-    curr: {}
-  green:
-    curr: {}
-kills:
-  red: 0
-  blue: 0
-  yellow: 0
-  green: 0
-base:
-  protection:
-    radius: 50
-count:
-  red: 0
-  blue: 0
-  yellow: 0
-  green: 0
+    block: wool:11
+    color: blue
+    spawn:
+      region:
+      x:
+      y:
+      z:
+    flag:
+      region:
+      x:
+      y:
+      z:
+    server: 
+staff:
+  group: moderators
+  head_block: 'whool:0'
+  chat_color: white

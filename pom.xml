@@ -9,6 +9,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.bukkit</groupId>
@@ -24,19 +25,14 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+        	<groupId>ws.slide.minecraft.bukkit</groupId>
+        	<artifactId>ServerMessenger</artifactId>
+            <version>0.1</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
 	</dependencies>
-	<distributionManagement>
-		<repository>
-			<id>repobo-rel</id>
-			<name>repo.bukkit.org Releases</name>
-			<url>http://repo.bukkit.org/content/repositories/releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>repobo-snap</id>
-			<name>repo.bukkit.org Snapshots</name>
-			<url>http://repo.bukkit.org/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 
 	<repositories>
 		<repository>
@@ -71,6 +67,7 @@
 				<directory>.</directory>
 				<includes>
 					<include>plugin.yml</include>
+					<include>config.yml</include>
 					<include>README</include>
 					<include>LICENSE</include>
 				</includes>
