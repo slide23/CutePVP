@@ -45,9 +45,10 @@ public class Team {
 	 * 
 	 * @param teamSection the configuration section for this team under "teams".
 	 */
-	public void load(ConfigurationSection teamSection) {
+	public void load(ConfigurationSection teamSection, ConfigurationSection teamStateSection) {
 		Logger logger = _plugin.getLogger();
-		ConfigHelper config = new ConfigHelper(logger);
+		ConfigHelper helper = new ConfigHelper(logger);
+
 		_id = teamSection.getName();
 		_name = teamSection.getString("name", "");
 		_chatColor = ChatColor.valueOf(teamSection.getString("chat_color", "white").toUpperCase());
@@ -61,7 +62,7 @@ public class Team {
 			logger.severe("Team " + getId() + " has an invalid team block.");
 		}
 
-		_spawn = config.loadLocation(teamSection, "spawn");
+		_spawn = helper.loadLocation(teamSection, "spawn");
 		_chestRegion = teamSection.getString("chest_region", "");
 		_regions = new HashSet<String>();
 		if (teamSection.isList("regions")) {
@@ -72,17 +73,19 @@ public class Team {
 			logger.severe("Team " + getId() + " has no WorldGuard regions.");
 		}
 		_score = new Score();
-		ConfigurationSection scoreSection = teamSection.getConfigurationSection("score");
+		ConfigurationSection scoreSection = helper.getOrCreateSection(teamStateSection, "score");
 		if (scoreSection != null) {
 			_score.load(scoreSection);
 		}
 
 		// Load the flags.
-		ConfigurationSection flagsSection = teamSection.getConfigurationSection("flags");
+		ConfigurationSection flagsSection = helper.getOrCreateSection(teamSection, "flags");
+		ConfigurationSection flagsStateSection = helper.getOrCreateSection(teamStateSection, "flags");
 		if (flagsSection != null) {
 			for (String id : flagsSection.getKeys(false)) {
-				ConfigurationSection section = flagsSection.getConfigurationSection(id);
-				Flag flag = Flag.load(section, this, _plugin.getLogger());
+				ConfigurationSection section = helper.getOrCreateSection(flagsSection, id);
+				ConfigurationSection sectionState = helper.getOrCreateSection(flagsStateSection, id);
+				Flag flag = Flag.load(section, sectionState, this, _plugin.getLogger());
 				if (flag != null) {
 					_flags.add(flag);
 				}
@@ -90,13 +93,13 @@ public class Team {
 		}
 
 		// Load the team members.
-		ConfigurationSection membersSection = teamSection.getConfigurationSection("members");
+		ConfigurationSection membersSection = helper.getOrCreateSection(teamStateSection, "members");
 		if (membersSection != null) {
 			for (String playerName : membersSection.getKeys(false)) {
 				OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
 				TeamPlayer teamPlayer = _plugin.getTeamManager().createTeamPlayer(player.getName(), this);
 				// createTeamPlayer() also calls addMember().
-				teamPlayer.getScore().load(membersSection.getConfigurationSection(playerName));
+				teamPlayer.getScore().load(helper.getOrCreateSection(membersSection, playerName));
 			}
 		}
 	} // load
@@ -107,15 +110,15 @@ public class Team {
 	 * 
 	 * @param teamSection the configuration section for this team under "teams".
 	 */
-	public void save(ConfigurationSection teamSection) {
-		ConfigHelper config = new ConfigHelper(_plugin.getLogger());
+	public void save(ConfigurationSection teamSection, ConfigurationSection teamSectionState) {
+		ConfigHelper helper = new ConfigHelper(_plugin.getLogger());
 
 		// Save the team's spawn.
-		ConfigurationSection spawnSection = teamSection.getConfigurationSection("spawn");
-		config.saveLocation(spawnSection, _spawn);
+		ConfigurationSection spawnSection = helper.getOrCreateSection(teamSection, "spawn");
+		helper.saveLocation(spawnSection, _spawn);
 
 		// Save the score.
-		ConfigurationSection scoreSection = teamSection.getConfigurationSection("score");
+		ConfigurationSection scoreSection = helper.getOrCreateSection(teamSectionState, "score");
 		if (scoreSection == null) {
 			scoreSection = teamSection.createSection("score");
 		}
@@ -123,12 +126,13 @@ public class Team {
 
 		// Save the flags.
 		for (Flag flag : _flags) {
-			ConfigurationSection flagSection = teamSection.getConfigurationSection("flags." + flag.getId());
-			flag.save(flagSection, _plugin.getLogger());
+			ConfigurationSection flagSection = helper.getOrCreateSection(teamSection, "flags." + flag.getId());
+			ConfigurationSection flagStateSection = helper.getOrCreateSection(teamSectionState, "flags." + flag.getId());
+			flag.save(flagSection, flagStateSection, _plugin.getLogger());
 		}
 
 		// Save the team members.
-		ConfigurationSection membersSection = teamSection.createSection("members");
+		ConfigurationSection membersSection = teamSectionState.createSection("members");
 		for (String playerName : _members) {
 			TeamPlayer teamPlayer = _plugin.getTeamManager().getTeamPlayer(playerName);
 			ConfigurationSection playerSection = membersSection.createSection(playerName);

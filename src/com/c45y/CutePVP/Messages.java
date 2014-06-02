@@ -28,7 +28,7 @@ public class Messages {
 	/**
 	 * The prefix at the start of broadcast messages.
 	 */
-	public static final String PREFIX = "[CutePvP] ";
+	public static final String PREFIX = "[CTF] ";
 
 	// ------------------------------------------------------------------------
 	/**

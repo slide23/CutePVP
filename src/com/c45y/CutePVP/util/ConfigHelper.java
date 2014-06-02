@@ -44,6 +44,23 @@ public class ConfigHelper {
 
 	// ------------------------------------------------------------------------
 	/**
+	 * Return the child section of the specified parent at path. If it doesn't
+	 * exist, create it.
+	 * 
+	 * @param parent some configuration section.
+	 * @param path path of the child configuration section relative to parent.
+	 * @return the sub-section of the specified parent at path.
+	 */
+	public ConfigurationSection getOrCreateSection(ConfigurationSection parent, String path) {
+		ConfigurationSection section = parent.getConfigurationSection(path);
+		if (section == null) {
+			section = parent.createSection(path);
+		}
+		return section;
+	}
+
+	// ------------------------------------------------------------------------
+	/**
 	 * Load a Location under the specified
 	 * 
 	 * @param parent some configuration section.
@@ -51,7 +68,7 @@ public class ConfigHelper {
 	 *        coordinates, relative to parent.
 	 * @return the sub-section of the specified parent at path.
 	 */
-	public Location loadLocation(ConfigurationSection parent, String path) {
+	public Location loadLocation(ConfigurationSection parent, String path, Location def) {
 		ConfigurationSection locSection = requireSection(parent, path);
 		try {
 			double x = locSection.getDouble("x");
@@ -59,12 +76,21 @@ public class ConfigHelper {
 			double z = locSection.getDouble("z");
 			double pitch = locSection.getDouble("pitch");
 			double yaw = locSection.getDouble("yaw");
-			String world = locSection.getString("world", "world");
+			String world = locSection.getString("world", Bukkit.getServer().getWorlds().get(0).getName());
+
+//			_logger.info("x=" + x + ",y=" + y + ",z=" + z + ",pitch=" + pitch + ",yaw=" + yaw + ",world=" + world);
+//			if (x == 0 && y == 0 && z == 0 && pitch == 0 && yaw == 0 && world == null)
+//				return def;
+
 			return new Location(Bukkit.getWorld(world), x, y, z, (float) yaw, (float) pitch);
 		} catch (Exception ex) {
 			_logger.severe("Error loading location from " + getFullPath(parent, path));
 		}
-		return null;
+		return def;
+	}
+
+	public Location loadLocation(ConfigurationSection parent, String path) {
+		return loadLocation(parent, path, null);
 	}
 
 	// ------------------------------------------------------------------------
@@ -76,12 +102,16 @@ public class ConfigHelper {
 	 * @param location the Location to save.
 	 */
 	public void saveLocation(ConfigurationSection section, Location location) {
-		section.set("x", location.getX());
-		section.set("y", location.getY());
-		section.set("z", location.getZ());
-		section.set("pitch", location.getPitch());
-		section.set("yaw", location.getYaw());
-		section.set("world", location.getWorld().getName());
+//		_logger.info("x=" + location.getX() + ",y=" + location.getY() + ",z=" + location.getZ() + ",pitch=" + location.getPitch() + ",yaw=" + location.getYaw() + ",world=" + location.getWorld());
+
+		if (location != null && location.getWorld() != null) {
+			section.set("x", location.getX());
+			section.set("y", location.getY());
+			section.set("z", location.getZ());
+			section.set("pitch", location.getPitch());
+			section.set("yaw", location.getYaw());
+			section.set("world", location.getWorld().getName());
+		}
 	}
 
 	// ------------------------------------------------------------------------
@@ -95,10 +125,12 @@ public class ConfigHelper {
 	 * @param location the Location to save.
 	 */
 	public void saveBlockLocation(ConfigurationSection section, Location location) {
-		section.set("x", location.getBlockX());
-		section.set("y", location.getBlockY());
-		section.set("z", location.getBlockZ());
-		section.set("world", location.getWorld().getName());
+		if (location != null && location.getWorld() != null) {
+			section.set("x", location.getBlockX());
+			section.set("y", location.getBlockY());
+			section.set("z", location.getBlockZ());
+			section.set("world", location.getWorld().getName());
+		}
 	}
 
 	// ------------------------------------------------------------------------

@@ -12,9 +12,11 @@ import java.util.LinkedHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import com.c45y.CutePVP.util.ConfigHelper;
 import com.c45y.CutePVP.util.WeightedSelection;
 
 // ----------------------------------------------------------------------------
@@ -40,12 +42,16 @@ public class TeamManager implements Iterable<Team> {
 		_teams.clear();
 		_players.clear();
 
+		ConfigHelper helper = new ConfigHelper(_plugin.getLogger());
+
 		// Load the teams.
-		ConfigurationSection teams = _plugin.getConfig().getConfigurationSection("teams");
+		ConfigurationSection teams = helper.getOrCreateSection(_plugin.getConfig(), "teams");
+		ConfigurationSection teamsState = helper.getOrCreateSection(_plugin.getState(), "teams");
 		for (String teamId : teams.getKeys(false)) {
-			ConfigurationSection teamSection = teams.getConfigurationSection(teamId);
+			ConfigurationSection teamSection = helper.getOrCreateSection(teams, teamId);
+			ConfigurationSection teamStateSection = helper.getOrCreateSection(teamsState, teamId);
 			Team team = new Team(_plugin);
-			team.load(teamSection);
+			team.load(teamSection, teamStateSection);
 			_teams.put(teamId, team);
 		}
 		_connectionRecords.load(getConnectionRecordsFile(), _plugin.getLogger());
@@ -57,11 +63,15 @@ public class TeamManager implements Iterable<Team> {
 	 */
 	public void save() {
 		// Save the teams. This is modification of a pre-existing section.
-		ConfigurationSection teams = _plugin.getConfig().getConfigurationSection("teams");
+		ConfigHelper helper = new ConfigHelper(_plugin.getLogger());
+
+		ConfigurationSection teams = helper.getOrCreateSection(_plugin.getConfig(), "teams");
+		ConfigurationSection teamsState = helper.getOrCreateSection(_plugin.getState(), "teams");
 		for (String teamId : _teams.keySet()) {
-			ConfigurationSection teamSection = teams.getConfigurationSection(teamId);
+			ConfigurationSection teamSection = helper.getOrCreateSection(teams, teamId);
+			ConfigurationSection teamSectionState = helper.getOrCreateSection(teamsState, teamId);
 			Team team = getTeam(teamId);
-			team.save(teamSection);
+			team.save(teamSection, teamSectionState);
 		}
 		_connectionRecords.save(getConnectionRecordsFile(), _plugin.getLogger());
 	}
@@ -230,23 +240,22 @@ public class TeamManager implements Iterable<Team> {
 	/**
 	 * Send a list of all members of each team to the player.
 	 * 
-	 * @param player the player issuing the list command.
+	 * @param sender the player issuing the list command.
 	 */
-	public void sendTeamLists(Player player) {
+	public void sendTeamLists(CommandSender sender) {
 		for (Team team : _teams.values()) {
 			StringBuilder message = new StringBuilder();
 			message.append(team.encodeTeamColor(team.getName()));
 			message.append(" [").append(team.getOnlineMembers().size());
 			message.append(" of ").append(team.getMembers().size()).append("]: ");
 			message.append(team.getOnlineList());
-			player.sendMessage(message.toString());
+			sender.sendMessage(message.toString());
 		}
 
 		// Return staff list in sorted order.
 		ArrayList<Player> onlineStaff = getOnlineStaff();
 		Player[] sortedStaff = new Player[onlineStaff.size()];
 		Arrays.sort(onlineStaff.toArray(sortedStaff), new Comparator<Player>() {
-			@Override
 			public int compare(Player a, Player b) {
 				return a.getName().compareTo(b.getName());
 			}
@@ -256,7 +265,7 @@ public class TeamManager implements Iterable<Team> {
 		for (Player staff : sortedStaff) {
 			staffMessage.append(' ').append(staff.getName());
 		}
-		player.sendMessage(staffMessage.toString());
+		sender.sendMessage(staffMessage.toString());
 	}
 
 	// ------------------------------------------------------------------------

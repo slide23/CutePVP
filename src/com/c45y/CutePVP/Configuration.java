@@ -7,6 +7,8 @@ import java.util.Date;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.c45y.CutePVP.util.ConfigHelper;
 
@@ -162,11 +164,11 @@ public class Configuration {
 		CHECK_HELMET = _plugin.getConfig().getBoolean("misc.check_helmet", true);
 		ALLOW_HELMET_CRAFTING = _plugin.getConfig().getBoolean("misc.allow_helmet_crafting", false);
 
-		ConfigurationSection spawn = _plugin.getConfig().getConfigurationSection("spawn");
-		FIRST_JOIN_SPAWN_LOCATION = helper.loadLocation(spawn, "first_join");
-		NON_TEAM_RESPAWN_LOCATION = helper.loadLocation(spawn, "non_team");
+		ConfigurationSection spawn = helper.getOrCreateSection(_plugin.getConfig(), "spawn");
+		FIRST_JOIN_SPAWN_LOCATION = helper.loadLocation(spawn, "first_join", _plugin.getServer().getWorlds().get(0).getSpawnLocation());
+		NON_TEAM_RESPAWN_LOCATION = helper.loadLocation(spawn, "non_team", _plugin.getServer().getWorlds().get(0).getSpawnLocation());
 
-		ConfigurationSection sounds = _plugin.getConfig().getConfigurationSection("sounds");
+		ConfigurationSection sounds = helper.getOrCreateSection(_plugin.getConfig(), "sounds");
 		FLAG_STEAL_SOUND = helper.loadSound(sounds, "steal", Sound.AMBIENCE_THUNDER, true);
 		FLAG_RETURN_SOUND = helper.loadSound(sounds, "return", Sound.ORB_PICKUP, true);
 		FLAG_CAPTURE_SOUND = helper.loadSound(sounds, "capture", Sound.LEVEL_UP, true);
@@ -182,17 +184,20 @@ public class Configuration {
 	 * Save all configuration.
 	 */
 	public void save() {
-		// Move aside the current configuration to a backup.
-		File backupsDir = new File(_plugin.getDataFolder(), "backups");
-		if (!backupsDir.isDirectory()) {
-			backupsDir.mkdirs();
-		}
+		backup();
+		backupState();
 
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
-		File backupFile = new File(backupsDir, "config.yml.backup-" + format.format(new Date()));
-		File configFile = new File(_plugin.getDataFolder(), "config.yml");
-		configFile.renameTo(backupFile);
+		updateConfigs();
 
+		_plugin.saveConfig();
+		_plugin.saveState();
+	} // save
+
+	// ------------------------------------------------------------------------
+	/**
+	 * Updae all configuration.
+	 */
+	public void updateConfigs() {
 		// Save the new configuration.
 		ConfigHelper helper = new ConfigHelper(_plugin.getLogger());
 		_plugin.getTeamManager().save();
@@ -204,13 +209,58 @@ public class Configuration {
 		_plugin.getConfig().set("time.flag_warning_minutes", FLAG_WARNING_MINUTES);
 		_plugin.getConfig().set("time.team_buff_seconds", TEAM_BUFF_SECONDS);
 
-		ConfigurationSection firstJoin = _plugin.getConfig().getConfigurationSection("spawn.first_join");
-		ConfigurationSection nonTeam = _plugin.getConfig().getConfigurationSection("spawn.non_team");
+		ConfigurationSection firstJoin = helper.getOrCreateSection(_plugin.getConfig(), "spawn.first_join");
+		ConfigurationSection nonTeam = helper.getOrCreateSection(_plugin.getConfig(), "spawn.non_team");
 		helper.saveLocation(firstJoin, FIRST_JOIN_SPAWN_LOCATION);
 		helper.saveLocation(nonTeam, NON_TEAM_RESPAWN_LOCATION);
-		_plugin.saveConfig();
 	} // save
 
+	// ------------------------------------------------------------------------
+	/**
+	 * Backup configuration.
+	 */
+	public void backup() {
+		// Move aside the current configuration to a backup.
+		File backupsDir = new File(_plugin.getDataFolder(), "backups");
+		if (!backupsDir.isDirectory()) {
+			backupsDir.mkdirs();
+		}
+
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
+
+		File backupFile = new File(backupsDir, "config.yml.backup-" + format.format(new Date()));
+		File configFile = new File(_plugin.getDataFolder(), "config.yml");
+		configFile.renameTo(backupFile);
+	} // backup
+
+	// ------------------------------------------------------------------------
+	/**
+	 * Backup state.
+	 */
+	public void backupState() {
+		// Move aside the current configuration to a backup.
+		File backupsDir = new File(_plugin.getDataFolder(), "backups");
+		if (!backupsDir.isDirectory()) {
+			backupsDir.mkdirs();
+		}
+
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
+
+		File backupStateFile = new File(backupsDir, "state.yml.backup-" + format.format(new Date()));
+		File stateFile = new File(_plugin.getDataFolder(), "state.yml");
+		stateFile.renameTo(backupStateFile);
+	} // backupState
+
+	// ------------------------------------------------------------------------
+	/**
+	 * Validate the configuration.
+	 */
+	public Boolean validate() {
+		
+		
+		return true;
+	} // validate
+	
 	// ------------------------------------------------------------------------
 	/**
 	 * The owning plugin.

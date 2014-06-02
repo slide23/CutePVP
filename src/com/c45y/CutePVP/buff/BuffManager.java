@@ -42,14 +42,18 @@ public class BuffManager implements Iterable<TeamBuff> {
 		_floorBuffs.clear();
 		_teamBuffs.clear();
 
+		ConfigHelper helper = new ConfigHelper(_plugin.getLogger());
+
 		// Load the team buffs.
-		ConfigurationSection teamBuffsSection = _plugin.getConfig().getConfigurationSection("buffs.team");
+		ConfigurationSection teamBuffsSection = helper.getOrCreateSection(_plugin.getConfig(), "buffs.team");
+		ConfigurationSection teamBuffsStateSection = helper.getOrCreateSection(_plugin.getState(), "buffs.team");
 		if (teamBuffsSection != null) {
 			for (String id : teamBuffsSection.getKeys(false)) {
-				ConfigurationSection section = teamBuffsSection.getConfigurationSection(id);
+				ConfigurationSection section = helper.getOrCreateSection(teamBuffsSection, id);
+				ConfigurationSection sectionState = helper.getOrCreateSection(teamBuffsStateSection, id);
 				if (section != null) {
 					TeamBuff teamBuff = new TeamBuff();
-					if (teamBuff.load(section, _plugin.getTeamManager(), _plugin.getLogger())) {
+					if (teamBuff.load(section, sectionState, _plugin.getTeamManager(), _plugin.getLogger())) {
 						_teamBuffs.add(teamBuff);
 					}
 				}
@@ -57,15 +61,14 @@ public class BuffManager implements Iterable<TeamBuff> {
 		}
 
 		// Load the potion effects for own team and enemy team blocks.
-		ConfigHelper helper = new ConfigHelper(_plugin.getLogger());
-		_friendPotions = helper.loadPotions(_plugin.getConfig().getConfigurationSection("buffs.friend"), "", true);
-		_enemyPotions = helper.loadPotions(_plugin.getConfig().getConfigurationSection("buffs.enemy"), "", true);
+		_friendPotions = helper.loadPotions(helper.getOrCreateSection(_plugin.getConfig(), "buffs.friend"), "", true);
+		_enemyPotions = helper.loadPotions(helper.getOrCreateSection(_plugin.getConfig(), "buffs.enemy"), "", true);
 
 		// Load the floor block buffs.
-		ConfigurationSection floorBuffsSection = _plugin.getConfig().getConfigurationSection("buffs.block");
+		ConfigurationSection floorBuffsSection = helper.getOrCreateSection(_plugin.getConfig(), "buffs.block");
 		if (floorBuffsSection != null) {
 			for (String id : floorBuffsSection.getKeys(false)) {
-				ConfigurationSection section = floorBuffsSection.getConfigurationSection(id);
+				ConfigurationSection section = helper.getOrCreateSection(floorBuffsSection, id);
 				if (section != null) {
 					FloorBuff floorBuff = new FloorBuff();
 					if (floorBuff.load(section, _plugin.getLogger())) {
@@ -100,11 +103,15 @@ public class BuffManager implements Iterable<TeamBuff> {
 	 * Only the team buffs can be be modified in-game - by admin commands.
 	 */
 	public void save() {
-		ConfigurationSection teamBuffsSection = _plugin.getConfig().getConfigurationSection("buffs.team");
+		ConfigHelper helper = new ConfigHelper(_plugin.getLogger());
+
+		ConfigurationSection teamBuffsSection = helper.getOrCreateSection(_plugin.getConfig(), "buffs.team");
+		ConfigurationSection teamBuffsStateSection = helper.getOrCreateSection(_plugin.getState(), "buffs.team");
 		if (teamBuffsSection != null) {
 			for (TeamBuff teamBuff : _teamBuffs) {
-				ConfigurationSection section = teamBuffsSection.getConfigurationSection(teamBuff.getId());
-				teamBuff.save(section, _plugin.getLogger());
+				ConfigurationSection section = helper.getOrCreateSection(teamBuffsSection, teamBuff.getId());
+				ConfigurationSection stateSection = helper.getOrCreateSection(teamBuffsStateSection, teamBuff.getId());
+				teamBuff.save(section, stateSection, _plugin.getLogger());
 			}
 		}
 	}

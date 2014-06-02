@@ -35,19 +35,19 @@ public class TeamBuff extends Buff {
 	 * @param logger used to log messages.
 	 * @return true if successfully loaded.
 	 */
-	public boolean load(ConfigurationSection section, TeamManager tm, Logger logger) {
+	public boolean load(ConfigurationSection section, ConfigurationSection sectionState, TeamManager tm, Logger logger) {
 		try {
 			ConfigHelper helper = new ConfigHelper(logger);
 			if (super.load(section, logger)) {
 				_id = section.getName();
 				_name = section.getString("name", _id);
-				_team = tm.getTeam(section.getString("team", ""));
+				_team = tm.getTeam(sectionState.getString("team", ""));
 				_location = helper.loadLocation(section, "location");
 				if (_location == null) {
 					logger.severe("Unable to load the " + _name + " buff location.");
 					return false;
 				}
-				_startMillis = section.getLong("start_millis");
+				_startMillis = sectionState.getLong("start_millis");
 				return true;
 			}
 		} catch (Exception ex) {
@@ -63,11 +63,11 @@ public class TeamBuff extends Buff {
 	 * @param section the section whose name is the ID of this buff.
 	 * @param logger used to log messages.
 	 */
-	public void save(ConfigurationSection section, Logger logger) {
+	public void save(ConfigurationSection section, ConfigurationSection stateSection, Logger logger) {
 		try {
 			ConfigHelper helper = new ConfigHelper(logger);
-			section.set("team", _team != null ? _team.getId() : "");
-			section.set("start_millis", _startMillis);
+			stateSection.set("team", _team != null ? _team.getId() : "");
+			stateSection.set("start_millis", _startMillis);
 			ConfigurationSection locationSection = section.createSection("location");
 			helper.saveBlockLocation(locationSection, _location);
 		} catch (Exception ex) {

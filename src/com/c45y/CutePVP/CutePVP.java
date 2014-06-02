@@ -1,5 +1,8 @@
 package com.c45y.CutePVP;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -14,6 +17,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -27,6 +32,7 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
  */
 public class CutePVP extends JavaPlugin {
 	// ------------------------------------------------------------------------
+
 	/**
 	 * Return a reference to the WorldGuard plugin and enable it if necessary.
 	 * 
@@ -85,8 +91,15 @@ public class CutePVP extends JavaPlugin {
 	 */
 	@Override
 	public void onEnable() {
+		loadState();
+
 		saveDefaultConfig();
 		getConfiguration().load();
+
+		// Go ahead and resave state incase we are starting from an empty file.
+		getConfiguration().updateConfigs();
+		getConfiguration().backupState();
+		saveState();
 
 		getServer().getPluginManager().registerEvents(_listener, this);
 
@@ -157,11 +170,12 @@ public class CutePVP extends JavaPlugin {
 		}, 0, getConfiguration().FLAG_FLAME_TICKS);
 
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-			// Save the configuration, with backups at 10 minute intervals.
+			// Save the state, with backups at 10 minute intervals.
 			// Log team membership and total scores.
-			@Override
 			public void run() {
-				getConfiguration().save();
+				getConfiguration().backupState();
+				saveState();
+//				getConfiguration().save();
 				for (Team team : getTeamManager()) {
 					getLogger().info(team.getName() + " score: " + ChatColor.stripColor(team.getScore().toString()));
 				}
@@ -180,7 +194,10 @@ public class CutePVP extends JavaPlugin {
 	 */
 	@Override
 	public void onDisable() {
-		getConfiguration().save();
+		getConfiguration().updateConfigs();
+		getConfiguration().backupState();
+		saveState();
+
 		_worldGuard = null;
 	}
 
@@ -239,24 +256,32 @@ public class CutePVP extends JavaPlugin {
 	 */
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-		if (!(sender instanceof Player)) {
-			sender.sendMessage("Sorry, this plugin cannot be used from console");
-			return true;
-		}
-		Player player = (Player) sender;
 		if (command.getName().equalsIgnoreCase("join")) {
+			if (!(sender instanceof Player)) {
+				sender.sendMessage("Sorry, this plugin cannot be used from console");
+				return true;
+			}
+			Player player = (Player) sender;
 			join(player);
 			return true;
 		} else if (command.getName().equalsIgnoreCase("g")) {
+			String player_name;
+			if (sender instanceof Player) {
+				Player player = (Player) sender;
+				player_name = player.getDisplayName();
+			} else {
+				player_name = "Server";
+			}
+
 			String message = ChatColor.RED + ">" + ChatColor.BLUE + ">" +
 								ChatColor.GREEN + ">" + ChatColor.YELLOW + ">" + ChatColor.WHITE
-								+ " <" + player.getDisplayName() + "> " + StringUtils.join(args, " ");
+								+ " <" + player_name + "> " + StringUtils.join(args, " ");
 			for (Player recipient : getServer().getOnlinePlayers()) {
 				recipient.sendMessage(message);
 			}
 			return true;
 		} else if (command.getName().equalsIgnoreCase("teams")) {
-			getTeamManager().sendTeamLists(player);
+			getTeamManager().sendTeamLists(sender);
 			return true;
 
 		} else if (command.getName().equalsIgnoreCase("score")) {
@@ -264,13 +289,22 @@ public class CutePVP extends JavaPlugin {
 				sender.sendMessage(team.encodeTeamColor(team.getName()) + ":");
 				sender.sendMessage(team.getScore().toString());
 			}
-			TeamPlayer teamPlayer = getTeamManager().getTeamPlayer(player);
-			if (teamPlayer != null) {
-				sender.sendMessage(player.getDisplayName() + ":");
-				sender.sendMessage(teamPlayer.getScore().toString());
+			if (sender instanceof Player) {
+				Player player = (Player) sender;
+				TeamPlayer teamPlayer = getTeamManager().getTeamPlayer(player);
+				if (teamPlayer != null) {
+					sender.sendMessage(player.getDisplayName() + ":");
+					sender.sendMessage(teamPlayer.getScore().toString());
+				}
 			}
 			return true;
 		} else if (command.getName().equalsIgnoreCase("flag")) {
+			if (!(sender instanceof Player)) {
+				sender.sendMessage("Sorry, this plugin cannot be used from console");
+				return true;
+			}
+			Player player = (Player) sender;
+
 			TeamPlayer teamPlayer = getTeamManager().getTeamPlayer(player);
 			if (teamPlayer != null) {
 				Flag flag = teamPlayer.getTeam().getNearestFlag(player);
@@ -282,6 +316,12 @@ public class CutePVP extends JavaPlugin {
 			}
 			return true;
 		} else if (command.getName().equalsIgnoreCase("drop")) {
+			if (!(sender instanceof Player)) {
+				sender.sendMessage("Sorry, this plugin cannot be used from console");
+				return true;
+			}
+			Player player = (Player) sender;
+
 			TeamPlayer teamPlayer = getTeamManager().getTeamPlayer(player);
 			if (teamPlayer != null && teamPlayer.getCarriedFlag() != null) {
 				Messages.success(player, null, "Flag dropped.");
@@ -291,6 +331,12 @@ public class CutePVP extends JavaPlugin {
 			}
 			return true;
 		} else if (command.getName().equalsIgnoreCase("testblock")) {
+			if (!(sender instanceof Player)) {
+				sender.sendMessage("Sorry, this plugin cannot be used from console");
+				return true;
+			}
+			Player player = (Player) sender;
+
 			TeamPlayer teamPlayer = getTeamManager().getTeamPlayer(player);
 			if (teamPlayer != null) {
 				teamPlayer.setTestingFloorBuffs(!teamPlayer.isTestingFloorBuffs());
@@ -327,13 +373,25 @@ public class CutePVP extends JavaPlugin {
 	 */
 	protected boolean handleCutePvPCommand(CommandSender sender, String[] args) {
 		if (args.length == 1) {
-			if (args[0].equals("save")) {
+			if (args[0].equals("reload")) {
+				reloadConfig();
+				reloadState();
+				getConfiguration().load();
+				Messages.success(sender, Messages.PREFIX, "Configuration reloaded.");
+				return true;
+			}
+			else if (args[0].equals("save")) {
 				getConfiguration().save();
 				Messages.success(sender, Messages.PREFIX, "Configuration saved.");
 				return true;
 			}
 		} else if (args.length == 2) {
 			if (args[0].equals("setspawn")) {
+				if (!(sender instanceof Player)) {
+					sender.sendMessage("Sorry, this plugin cannot be used from console");
+					return true;
+				}
+
 				if (sender instanceof Player) {
 					Player player = (Player) sender;
 					String teamId = args[1];
@@ -384,6 +442,11 @@ public class CutePVP extends JavaPlugin {
 		} else if (args.length == 3) {
 			// /cutepvp buff set <buffId>
 			if (args[0].equals("buff") && args[1].equals("set")) {
+				if (!(sender instanceof Player)) {
+					sender.sendMessage("Sorry, this plugin cannot be used from console");
+					return true;
+				}
+
 				String buffId = args[2];
 				TeamBuff teamBuff = getBuffManager().getTeamBuff(buffId);
 				if (teamBuff == null) {
@@ -407,6 +470,11 @@ public class CutePVP extends JavaPlugin {
 		} else if (args.length == 4) {
 			// /cutepvp flag set <teamId> <flagId>
 			if (args[0].equals("flag") && args[1].equals("set")) {
+				if (!(sender instanceof Player)) {
+					sender.sendMessage("Sorry, this plugin cannot be used from console");
+					return true;
+				}
+
 				String teamId = args[2];
 				Team team = getTeamManager().getTeam(teamId);
 				if (team == null) {
@@ -492,6 +560,11 @@ public class CutePVP extends JavaPlugin {
 	private Configuration _configuration = new Configuration(this);
 
 	/**
+	 * Store the state in a seperate file
+	 */
+	private FileConfiguration state;
+
+	/**
 	 * Event listener.
 	 */
 	private CutePVPListener _listener = new CutePVPListener(this);
@@ -505,4 +578,29 @@ public class CutePVP extends JavaPlugin {
 	 * The {@link BuffManager}.
 	 */
 	private BuffManager _buffManager = new BuffManager(this);
+
+	public FileConfiguration getState() {
+		return state;
+	}
+
+	public void saveState() {
+		try {
+			state.save(new File(getDataFolder(), "state.yml"));
+		} catch (IOException e) {
+			getLogger().severe("Unable to save state!");;
+		}
+	}
+
+	public void loadState() {
+		state = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "state.yml"));
+	    InputStream defConfigStream = this.getResource("state.yml");
+	    if (defConfigStream != null) {
+	        YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+	        state.setDefaults(defConfig);
+	    }
+	}
+
+	public void reloadState() {
+		loadState();
+	}
 } // class CutePVP

@@ -29,19 +29,19 @@ public class Flag {
 	 * @param logger used to log errors.
 	 * @return the new Flag, or null on error.
 	 */
-	public static Flag load(ConfigurationSection section, Team team, Logger logger) {
+	public static Flag load(ConfigurationSection section, ConfigurationSection sectionState, Team team, Logger logger) {
 		ConfigHelper config = new ConfigHelper(logger);
 		try {
 			Flag flag = new Flag(team);
 			flag._id = section.getName();
 			flag._homeLocation = config.loadLocation(section, "home");
-			flag._dropLocation = (section.contains("current")) ? config.loadLocation(section, "current") : flag._homeLocation.clone();
+			flag._dropLocation = (sectionState.contains("current")) ? config.loadLocation(sectionState, "current") : flag._homeLocation.clone();
 			flag._name = section.getString("description", team.getName() + "'s flag");
-			flag._stealTime = section.getLong("steal_time");
+			flag._stealTime = sectionState.getLong("steal_time");
 			Configuration configuration = team.getPlugin().getConfiguration();
 			long warningTime = flag._stealTime + 60 * 1000 * (configuration.FLAG_CAPTURE_MINUTES - configuration.FLAG_WARNING_MINUTES);
 			flag._returnWarningPending = (System.currentTimeMillis() < warningTime);
-			flag._dropTime = section.getLong("drop_time");
+			flag._dropTime = sectionState.getLong("drop_time");
 			return flag;
 		} catch (Exception ex) {
 			logger.severe("Error loading " + team.getId() + "'s flag " + section.getName());
@@ -56,14 +56,14 @@ public class Flag {
 	 * @param section the configuration section of the flag.
 	 * @param logger logs messages.
 	 */
-	public void save(ConfigurationSection section, Logger logger) {
+	public void save(ConfigurationSection section, ConfigurationSection stateSection, Logger logger) {
 		ConfigHelper helper = new ConfigHelper(logger);
-		ConfigurationSection currentSection = section.getConfigurationSection("current");
-		ConfigurationSection homeSection = section.getConfigurationSection("home");
+		ConfigurationSection currentSection = helper.getOrCreateSection(stateSection, "current");
+		ConfigurationSection homeSection = helper.getOrCreateSection(section, "home");
 		helper.saveBlockLocation(currentSection, _dropLocation);
 		helper.saveBlockLocation(homeSection, _homeLocation);
-		section.set("steal_time", _stealTime);
-		section.set("drop_time", _dropTime);
+		stateSection.set("steal_time", _stealTime);
+		stateSection.set("drop_time", _dropTime);
 	}
 
 	// ------------------------------------------------------------------------
